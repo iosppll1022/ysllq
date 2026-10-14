@@ -65,7 +65,7 @@
             SEL sel = sel_registerName("_setupWithContainerID:options:");
             Method m = class_getInstanceMethod(CKC, sel);
             if (m) {
-                static IMP (*orig_setup)(id, SEL, id, id);
+                static IMP orig_setup;
                 IMP rep = imp_implementationWithBlock(^id(id self_, id cid, id opts){
                     @try { return ((id(*)(id,SEL,id,id))orig_setup)(self_, sel, cid, opts); }
                     @catch (NSException *e) { YSLog(@"_setupWithContainerID 吞掉异常 %@", e); return self_; }
@@ -74,16 +74,18 @@
                 YSLog(@"已 hook CKContainer _setupWithContainerID:options:");
             }
         }
+
         // A3. 兜底：直接伪造“当前进程 entitlements”的读取点（类方法名随 SDK 变，按需改）。
         //      常见候选：+[CKEntitlements entitlementsForCurrentProcess] / +[CKEntitlements currentEntitlements]
         Class CKE = objc_getClass("CKEntitlements");
         const char *cands[] = {"entitlementsForCurrentProcess", "currentEntitlements", "processEntitlements", NULL};
         for (int i = 0; CKE && cands[i]; i++) {
-            SEL s = sel_registerName(cands[i]);
+            const char *candName = cands[i]; // 先取出指针，避免 Block 直接捕获 C 数组报错
+            SEL s = sel_registerName(candName);
             if ([CKE respondsToSelector:s]) {
                 static IMP orig_ce;
                 IMP rep = imp_implementationWithBlock(^id(id cls){
-                    YSLog(@"CKEntitlements +%s 返回伪权限", cands[i]);
+                    YSLog(@"CKEntitlements +%s 返回伪权限", candName);
                     return YSFakeEntitlements();
                 });
                 MSHookMessageEx(object_getClass(CKE), s, rep, (IMP *)&orig_ce);
