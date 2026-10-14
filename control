@@ -1,0 +1,7 @@
+Package: com.lxm.ysfakeck
+Name: ysfakeck
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Runtime fake-CloudKit-entitlements shim for com.lxm.ysbrowser (Apple ID sideload)
+Author: you
+Section: Tweaks

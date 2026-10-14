@@ -1,0 +1,20 @@
+# 裸 clang 编译（不装 Theos）——需要 Xcode/iOS SDK + CydiaSubstrate 头和 tbd/库
+# 把 SDKROOT / SUBSTRATE 改成你机器上的真实路径。产物: ysfakeck.dylib
+SDKROOT ?= $(shell xcrun --sdk iphoneos --show-sdk-path)
+CC       = $(shell xcrun --sdk iphoneos -f clang)
+SUBSTRATE_INC ?= /opt/substrate            # 放 substrate.h 的目录
+SUBSTRATE_LIB ?= /opt/substrate            # 放 libsubstrate.tbd/.dylib 的目录
+
+SRC  ?= inject_cloudkit.m                   # 或者用 Theos 把 Tweak.x 预处理成 .m 再编
+OUT  ?= ysfakeck.dylib
+
+all:
+	$(CC) -arch arm64 -dynamiclib -fobjc-arc \
+	  -isysroot $(SDKROOT) \
+	  -I. -I$(SUBSTRATE_INC) \
+	  -framework Foundation -framework CoreFoundation \
+	  -L$(SUBSTRATE_LIB) -lsubstrate \
+	  -install_name @executable_path/ysfakeck.dylib \
+	  -miphoneos-version-min=15.0 \
+	  -o $(OUT) $(SRC)
+	@echo "built $(OUT)"
