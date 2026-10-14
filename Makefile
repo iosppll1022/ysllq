@@ -3,7 +3,7 @@
 # 切换 .x / .m：默认用 Tweak.x；想用纯 ObjC 版，把 FILES 改成 inject_cloudkit.m 并删掉 Tweak.x。
 
 TARGET := iphone:clang:latest:15.0
-ARCHS := arm64
+ARCHS := arm64 arm64e
 
 # 关键：生成“可被 insert_dylib 注入”的独立 dylib，而不是走 Cydia 的 MobileSubstrate 自动加载
 INSTALL_TARGET_PROCESSES = YSBrowser
